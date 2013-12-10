@@ -19,12 +19,12 @@ package main
 
 import (
 	"bytes"
+	"code.google.com/p/goauth2/oauth"
 	"database/sql"
 	"flag"
 	"fmt"
-	"github.com/codegangsta/martini"
-	//	"code.google.com/p/goauth2/oauth" http://code.google.com/p/goauth2/source/browse/oauth/example/oauthreq.go
 	"github.com/abhiyerra/scalpy"
+	"github.com/codegangsta/martini"
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
@@ -34,22 +34,42 @@ import (
 var (
 	postgresHost string
 	postgresDb   string
+
+	githubClientId     string
+	githubClientSecret string
+	githubRedirectUrl  string
+	githubAuthUrl      = "https://github.com/login/oauth/authorize"
+	githubTokenUrl     = "https://github.com/login/oauth/access_token"
+	githubConfig       *oauth.Config
+
+	db *sql.DB
 )
 
 func dbConnect() *sql.DB {
-	db, err := sql.Open("postgres", fmt.Sprintf("dbname=%s sslmode=disable"))
+	db, err := sql.Open("postgres", fmt.Sprintf("dbname=%s sslmode=disable", postgresDb))
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 	}
 
 	return db
 }
 
-func parseEnv() {
+func initConfig() {
 	flag.StringVar(&postgresHost, "pghost", "", "the host for postgres")
 	flag.StringVar(&postgresDb, "dbname", "", "the db for postgres")
+	flag.StringVar(&githubClientId, "github_client_id", "", "github client id")
+	flag.StringVar(&githubClientSecret, "github_client_secret", "", "github client secret")
+	flag.StringVar(&githubRedirectUrl, "github_redirect_url", "", "github redirect url")
 
 	flag.Parse()
+
+	githubConfig = &oauth.Config{
+		ClientId:     githubClientId,
+		ClientSecret: githubClientSecret,
+		AuthURL:      githubAuthUrl,
+		TokenURL:     githubTokenUrl,
+	}
+
 }
 
 // TODO Probably want to use this: https://github.com/codegangsta/martini-contrib/tree/master/render
@@ -91,7 +111,7 @@ func (p *Page) RenderLayout(w http.ResponseWriter) {
 	t.Execute(w, p)
 }
 
-func RootPathHandler(w http.ResponseWriter, r *http.Request) {
+func RootHandler(w http.ResponseWriter, r *http.Request) {
 	page := &Page{
 		Title:    "Welcome",
 		ViewFile: "views/bounties/_new.html",
@@ -156,52 +176,47 @@ func ShowBountyHandler(w http.ResponseWriter, r *http.Request) {
 	page.RenderLayout(w)
 }
 
+func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	// Make sure token still exists.
+
+	url := githubConfig.AuthCodeURL("")
+	http.Redirect(w, r, url, 302)
+}
+
+func RegisterAuthorizeHandler(w http.ResponseWriter, r *http.Request) {
+	code := r.FormValue("code")
+	if code == "" {
+		fmt.Fprintf(w, "Failed to login")
+		return
+	}
+
+	transport := &oauth.Transport{Config: githubConfig}
+	token, _ := transport.Exchange(code)
+
+	fmt.Fprintf(w, token.AccessToken)
+}
+
+func DiscoverHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func main() {
-	parseEnv()
+	initConfig()
+
+	db = dbConnect()
+
+	fmt.Println(githubClientId)
 
 	m := martini.Classic()
-	m.Get("/", RootPathHandler)
+	m.Get("/", RootHandler)
+	m.Get("/register/activate", RegisterAuthorizeHandler) // TODO Should be authorize
+	m.Get("/register", RegisterHandler)
+
 	m.Post("/bounties", NewBountyHandler)
 	m.Get("/bounties/:id", ShowBountyHandler)
 
-	m.Get("/register", RootPathHandler)
-	m.Post("/search", RootPathHandler)
+	//	m.Post("/search", RootHandler)
+	m.Post("/discover", RootHandler)
+	m.Post("/pricing", RootHandler)
 	m.Run()
 }
-
-/*
-
-CREATE TYPE hosting_provider AS ENUM ('github');
-
-create table users (
-   id serial primary key,
-   username varchar(255),
-   password varchar(255),
-   salt varchar(255),
-   github_identifier varchar(255)
-   created_at datetime default now()
-   created_at datetime default now()
-)
-
-create table issues (
-   id serial primary key,
-   original_url varchar(255),
-   hoster hosting_provider,
-   repo varchar(255)
-   created_at datetime default now()
-   created_at datetime default now()
-);
-
-CREATE TYPE bounty_state as ENUM ('open', 'paid', 'closed', 'cancelled');
-
-create table bounties (
-   user_id serial references users(id),
-   issue_id serial references issues(id),
-   amount float,
-   transaction_status bounty_state,
-   expires_at datetime
-   created_at datetime default now()
-   created_at datetime default now()
-);
-
-*/
