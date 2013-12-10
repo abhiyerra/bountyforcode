@@ -27,7 +27,7 @@ import (
 	_ "github.com/lib/pq"
 	"log"
 	"text/template"
-	//	"github.com/abhiyerra/scalpy"
+	"github.com/abhiyerra/scalpy"
 	"net/http"
 )
 
@@ -52,8 +52,11 @@ func parseEnv() {
 	flag.Parse()
 }
 
+// TODO Probably want to use this: https://github.com/codegangsta/martini-contrib/tree/master/render
 type Page struct {
 	Title   string
+	Body    string
+
 	Content string
 
 	ViewFile string
@@ -103,7 +106,54 @@ func NewBountyHandler(w http.ResponseWriter, r *http.Request) {
 		ViewFile: "views/bounties/_confirm.html",
 	}
 
-	page.RenderView(w)
+	var vals struct {
+		Repo string
+	}
+
+	issue := scalpy.ScalpUrl(r.FormValue("issue-url"))
+	if issue == nil {
+		vals.Repo = "Issue doesn't exist"
+	} else {
+		vals.Repo = issue.Repo
+	}
+
+	t, err := template.ParseFiles(page.ViewFile)
+	if err != nil {
+		log.Printf("%v\n", err)
+	}
+
+	buffer := new(bytes.Buffer)
+
+	t.Execute(buffer, vals)
+	page.Content = buffer.String()
+
+	page.RenderLayout(w)
+}
+
+func ShowBountyHandler(w http.ResponseWriter, r *http.Request) {
+	page := &Page{
+		Title:    "New Bounty",
+		ViewFile: "views/bounties/show.html",
+	}
+
+	var vals struct {
+		Repo string
+		OriginalUrl string
+	}
+
+	vals.OriginalUrl = "123"
+
+	t, err := template.ParseFiles(page.ViewFile)
+	if err != nil {
+		log.Printf("%v\n", err)
+	}
+
+	buffer := new(bytes.Buffer)
+
+	t.Execute(buffer, vals)
+	page.Content = buffer.String()
+
+	page.RenderLayout(w)
 }
 
 func main() {
@@ -111,9 +161,48 @@ func main() {
 
 	m := martini.Classic()
 	m.Get("/", RootPathHandler)
-	m.Get("/register", RootPathHandler)
-	m.Get("/bounties", RootPathHandler)
 	m.Post("/bounties", NewBountyHandler)
+	m.Get("/bounties/:id", ShowBountyHandler)
+	
+
+	m.Get("/register", RootPathHandler)
 	m.Post("/search", RootPathHandler)
 	m.Run()
 }
+
+/*
+
+CREATE TYPE hosting_provider AS ENUM ('github');
+
+create table users (
+   id serial primary key,
+   username varchar(255),
+   password varchar(255),
+   salt varchar(255),
+   github_identifier varchar(255)
+   created_at datetime default now()
+   created_at datetime default now()
+)
+
+create table issues (
+   id serial primary key,
+   original_url varchar(255),
+   hoster hosting_provider,
+   repo varchar(255)
+   created_at datetime default now()
+   created_at datetime default now()
+);
+
+CREATE TYPE bounty_state as ENUM ('open', 'paid', 'closed', 'cancelled');
+
+create table bounties (
+   user_id serial references users(id),
+   issue_id serial references issues(id),
+   amount float,
+   transaction_status bounty_state,
+   expires_at datetime
+   created_at datetime default now()
+   created_at datetime default now()
+);
+
+*/
