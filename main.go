@@ -19,13 +19,13 @@ package main
 
 import (
 	"database/sql"
-	_ "github.com/lib/pq"
-	"github.com/codegangsta/martini"
-	"log"
-	"fmt"
 	"flag"
+	"fmt"
+	"github.com/codegangsta/martini"
+	_ "github.com/lib/pq"
+	"log"
 	"text/template"
-//	"github.com/abhiyerra/scalpy"
+	//	"github.com/abhiyerra/scalpy"
 	"net/http"
 )
 
@@ -50,9 +50,25 @@ func parseEnv() {
 	flag.Parse()
 }
 
+type Page struct {
+	Title string
+	Body  []byte
+}
+
+func renderPage(w http.ResponseWriter, p *Page) {
+	t, err := template.ParseFiles("views/layouts/application.html")
+
+	if err != nil {
+		log.Printf("%v\n", err)
+	}
+
+	t.Execute(w, p)
+}
+
 func RootPathHandler(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.New("foo").Parse(`{{define "T"}}Hello, {{.}}!{{end}}`)
-	t.ExecuteTemplate(w, "T", "<script>alert('you have been pwned')</script>")
+	renderPage(w, &Page{
+		Title: "Hello",
+	})
 }
 
 func main() {
