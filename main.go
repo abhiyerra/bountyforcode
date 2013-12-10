@@ -24,11 +24,11 @@ import (
 	"fmt"
 	"github.com/codegangsta/martini"
 	//	"code.google.com/p/goauth2/oauth" http://code.google.com/p/goauth2/source/browse/oauth/example/oauthreq.go
+	"github.com/abhiyerra/scalpy"
 	_ "github.com/lib/pq"
 	"log"
-	"text/template"
-	"github.com/abhiyerra/scalpy"
 	"net/http"
+	"text/template"
 )
 
 var (
@@ -54,8 +54,8 @@ func parseEnv() {
 
 // TODO Probably want to use this: https://github.com/codegangsta/martini-contrib/tree/master/render
 type Page struct {
-	Title   string
-	Body    string
+	Title string
+	Body  string
 
 	Content string
 
@@ -137,7 +137,7 @@ func ShowBountyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var vals struct {
-		Repo string
+		Repo        string
 		OriginalUrl string
 	}
 
@@ -163,7 +163,6 @@ func main() {
 	m.Get("/", RootPathHandler)
 	m.Post("/bounties", NewBountyHandler)
 	m.Get("/bounties/:id", ShowBountyHandler)
-	
 
 	m.Get("/register", RootPathHandler)
 	m.Post("/search", RootPathHandler)
