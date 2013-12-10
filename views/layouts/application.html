@@ -1,14 +1,44 @@
 <html>
   <head>
+    <title>bountyforcode - {{.Title}}</title>
+
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+
+    <script src="//use.typekit.net/zxd1bim.js" type="text/javascript">
+     try{Typekit.load();}catch(e){}
+    </script>
+
+    <script type="text/javascript">
+
+     var _gaq = _gaq || [];
+     _gaq.push(['_setAccount', 'UA-34849865-1']);
+     _gaq.push(['_trackPageview']);
+
+     (function() {
+       var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+       ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+       var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+     })();
+
+    </script>
   </head>
 
   <body>
-    <h1>bountyforcode</h1>
+    <div class="container">
+      <header>
+        <h1>bountyforcode</h1>
 
-    <h1>{{.Title}}</h1>
+        <h2>{{.Title}}</h2>
+      </header>
 
-    <p>[<a href="/edit/{{.Title}}">edit</a>]</p>
+      <article>
+        <div>{{.Content}}</div>
+      </article>
 
-<div>{{printf "%s" .Body}}</div>
+      <footer>
+        copyright &copy; 2012-2014 abhi yerra. all rights reserved
+      </footer>
+    </div>
   </body>
 </html>

@@ -18,10 +18,12 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
 	"flag"
 	"fmt"
 	"github.com/codegangsta/martini"
+	//	"code.google.com/p/goauth2/oauth" http://code.google.com/p/goauth2/source/browse/oauth/example/oauthreq.go
 	_ "github.com/lib/pq"
 	"log"
 	"text/template"
@@ -51,13 +53,34 @@ func parseEnv() {
 }
 
 type Page struct {
-	Title string
-	Body  []byte
+	Title   string
+	Content string
+
+	ViewFile string
+	Layout   string
 }
 
-func renderPage(w http.ResponseWriter, p *Page) {
-	t, err := template.ParseFiles("views/layouts/application.html")
+func (p *Page) RenderView(w http.ResponseWriter) {
+	t, err := template.ParseFiles(p.ViewFile)
+	if err != nil {
+		log.Printf("%v\n", err)
+	}
 
+	buffer := new(bytes.Buffer)
+
+	t.Execute(buffer, p)
+	p.Content = buffer.String()
+	p.RenderLayout(w)
+}
+
+func (p *Page) RenderLayout(w http.ResponseWriter) {
+	var layout string = p.Layout
+
+	if layout == "" {
+		layout = "views/layouts/application.html"
+	}
+
+	t, err := template.ParseFiles(layout)
 	if err != nil {
 		log.Printf("%v\n", err)
 	}
@@ -66,9 +89,21 @@ func renderPage(w http.ResponseWriter, p *Page) {
 }
 
 func RootPathHandler(w http.ResponseWriter, r *http.Request) {
-	renderPage(w, &Page{
-		Title: "Hello",
-	})
+	page := &Page{
+		Title:    "Welcome",
+		ViewFile: "views/bounties/_new.html",
+	}
+
+	page.RenderView(w)
+}
+
+func NewBountyHandler(w http.ResponseWriter, r *http.Request) {
+	page := &Page{
+		Title:    "New Bounty",
+		ViewFile: "views/bounties/_confirm.html",
+	}
+
+	page.RenderView(w)
 }
 
 func main() {
@@ -76,8 +111,9 @@ func main() {
 
 	m := martini.Classic()
 	m.Get("/", RootPathHandler)
+	m.Get("/register", RootPathHandler)
 	m.Get("/bounties", RootPathHandler)
-	m.Post("/bounties", RootPathHandler)
+	m.Post("/bounties", NewBountyHandler)
 	m.Post("/search", RootPathHandler)
 	m.Run()
 }
