@@ -18,13 +18,14 @@
 package main
 
 import (
+	. "bountyforcode/app"
 	"bytes"
-	"code.google.com/p/goauth2/oauth"
 	"database/sql"
 	"flag"
 	"fmt"
 	"github.com/abhiyerra/scalpy"
-	"github.com/codegangsta/martini"
+	//	"github.com/abhiyerra/coinbase"
+	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
@@ -35,17 +36,12 @@ var (
 	postgresHost string
 	postgresDb   string
 
-	githubClientId     string
-	githubClientSecret string
-	githubRedirectUrl  string
-	githubAuthUrl      = "https://github.com/login/oauth/authorize"
-	githubTokenUrl     = "https://github.com/login/oauth/access_token"
-	githubConfig       *oauth.Config
-
-	db *sql.DB
+	domain string
 )
 
 func dbConnect() *sql.DB {
+	log.Printf("Connecting to DB: %s", postgresDb)
+
 	db, err := sql.Open("postgres", fmt.Sprintf("dbname=%s sslmode=disable", postgresDb))
 	if err != nil {
 		log.Fatal(err)
@@ -57,19 +53,14 @@ func dbConnect() *sql.DB {
 func initConfig() {
 	flag.StringVar(&postgresHost, "pghost", "", "the host for postgres")
 	flag.StringVar(&postgresDb, "dbname", "", "the db for postgres")
-	flag.StringVar(&githubClientId, "github_client_id", "", "github client id")
-	flag.StringVar(&githubClientSecret, "github_client_secret", "", "github client secret")
-	flag.StringVar(&githubRedirectUrl, "github_redirect_url", "", "github redirect url")
+	flag.StringVar(&GithubClientId, "github_client_id", "", "github client id")
+	flag.StringVar(&GithubClientSecret, "github_client_secret", "", "github client secret")
+	flag.StringVar(&GithubRedirectUrl, "github_redirect_url", "", "github redirect url")
+	flag.StringVar(&domain, "domain", "", "domain this is running on")
 
 	flag.Parse()
 
-	githubConfig = &oauth.Config{
-		ClientId:     githubClientId,
-		ClientSecret: githubClientSecret,
-		AuthURL:      githubAuthUrl,
-		TokenURL:     githubTokenUrl,
-	}
-
+	InitGithub()
 }
 
 // TODO Probably want to use this: https://github.com/codegangsta/martini-contrib/tree/master/render
@@ -137,6 +128,8 @@ func NewBountyHandler(w http.ResponseWriter, r *http.Request) {
 		vals.Repo = issue.Repo
 	}
 
+	IssueFind("123", "123")
+
 	t, err := template.ParseFiles(page.ViewFile)
 	if err != nil {
 		log.Printf("%v\n", err)
@@ -176,47 +169,64 @@ func ShowBountyHandler(w http.ResponseWriter, r *http.Request) {
 	page.RenderLayout(w)
 }
 
-func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	// Make sure token still exists.
-
-	url := githubConfig.AuthCodeURL("")
-	http.Redirect(w, r, url, 302)
-}
-
-func RegisterAuthorizeHandler(w http.ResponseWriter, r *http.Request) {
-	code := r.FormValue("code")
-	if code == "" {
-		fmt.Fprintf(w, "Failed to login")
-		return
-	}
-
-	transport := &oauth.Transport{Config: githubConfig}
-	token, _ := transport.Exchange(code)
-
-	fmt.Fprintf(w, token.AccessToken)
-}
-
 func DiscoverHandler(w http.ResponseWriter, r *http.Request) {
 
+}
+
+func ProjectRootHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	project_identifier := vars["subdomain"]
+
+	type ProjectPage struct {
+		Page
+		Projects []Project
+	}
+
+	page := &ProjectPage{
+		Page: Page{
+			Title:    project_identifier,
+			ViewFile: "views/projects/show.html",
+		},
+	}
+
+	page.Projects = FindProjects(project_identifier)
+	fmt.Printf("%v, %v\n", page.Title, page.Projects)
+
+	t, err := template.ParseFiles(page.ViewFile)
+	if err != nil {
+		log.Printf("%v\n", err)
+	}
+
+	buffer := new(bytes.Buffer)
+
+	t.Execute(buffer, page)
+	page.Content = buffer.String()
+
+	page.RenderLayout(w)
 }
 
 func main() {
 	initConfig()
 
-	db = dbConnect()
+	Db = dbConnect()
 
-	fmt.Println(githubClientId)
+	fmt.Println(domain)
+	subdom := fmt.Sprintf("{subdomain:[a-z]+}.%s", domain)
+	fmt.Println(subdom)
 
-	m := martini.Classic()
-	m.Get("/", RootHandler)
-	m.Get("/register/activate", RegisterAuthorizeHandler) // TODO Should be authorize
-	m.Get("/register", RegisterHandler)
+	m := mux.NewRouter()
+	m.HandleFunc("/", ProjectRootHandler).Host(subdom).Methods("GET")
+	m.HandleFunc("/", RootHandler).Methods("GET")
+	m.HandleFunc("/register/activate", RegisterAuthorizeHandler).Methods("GET") // TODO Should be authorize
+	m.HandleFunc("/register", RegisterHandler).Methods("GET")
 
-	m.Post("/bounties", NewBountyHandler)
-	m.Get("/bounties/:id", ShowBountyHandler)
+	m.HandleFunc("/bounties", NewBountyHandler).Methods("POST")
+	m.HandleFunc("/bounties/{id}", ShowBountyHandler).Methods("POST")
 
-	//	m.Post("/search", RootHandler)
-	m.Post("/discover", RootHandler)
-	m.Post("/pricing", RootHandler)
-	m.Run()
+	m.HandleFunc("/search", RootHandler).Methods("GET")
+	m.HandleFunc("/discover", DiscoverHandler).Methods("GET")
+	m.HandleFunc("/pricing", RootHandler).Methods("GET")
+
+	http.Handle("/", m)
+	http.ListenAndServe(":3000", nil)
 }

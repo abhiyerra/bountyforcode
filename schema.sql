@@ -7,7 +7,6 @@ CREATE OR REPLACE FUNCTION update_updated_at_column()
         $$ language 'plpgsql';
 
 
-CREATE TYPE hosting_provider AS ENUM ('github');
 
 CREATE TABLE users (
    id serial primary key,
@@ -24,11 +23,23 @@ CREATE TRIGGER update_users_updated_at BEFORE UPDATE
         update_updated_at_column();
 
 
+CREATE TYPE hosting_provider AS ENUM ('github');
+
+CREATE TABLE projects (
+   id serial primary key,
+   hoster hosting_provider,
+   identifier varchar(255),
+   repo varchar(255),
+   created_at timestamp default now(),
+   updated_at timestamp default now()
+);
+
+
 CREATE TABLE issues (
    id serial primary key,
    original_url varchar(255),
-   hoster hosting_provider,
-   repo varchar(255),
+   host_identifier varchar(20),
+   project_id serial references projects(id),
    created_at timestamp default now(),
    updated_at timestamp default now()
 );
