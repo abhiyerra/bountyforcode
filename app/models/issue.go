@@ -32,7 +32,14 @@ func IssueFind(project, repo string) {
 }
 
 func FindProjectIssues(project string) (issues []Issue) {
-	rows, err := Db.Query("SELECT id, repo, identifier, coinbase_button_code FROM issues WHERE project = $1", strings.ToLower(project))
+	var rows *sql.Rows
+	var err error
+
+	if project == "" {
+		rows, err = Db.Query("SELECT id, repo, identifier, coinbase_button_code FROM issues")
+	} else {
+		rows, err = Db.Query("SELECT id, repo, identifier, coinbase_button_code FROM issues WHERE project = $1", strings.ToLower(project))
+	}
 
 	if err != nil {
 		log.Fatal(err)

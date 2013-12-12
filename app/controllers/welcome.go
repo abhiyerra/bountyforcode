@@ -15,7 +15,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 		Discover string
 	}
 
-	issues := FindProjectIssues("abhiyerra")
+	issues := FindProjectIssues("")
 
 	page := &RootPage{
 		Page: Page{

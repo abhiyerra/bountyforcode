@@ -9,8 +9,6 @@ import (
 
 type Page struct {
 	Title string
-	Body  string
-
 	Content string
 
 	ViewFile string
