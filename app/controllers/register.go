@@ -1,6 +1,7 @@
 package bountyforcode
 
 import (
+	. "github.com/abhiyerra/bountyforcode/app/models"
 	"code.google.com/p/goauth2/oauth"
 	"fmt"
 	"log"
