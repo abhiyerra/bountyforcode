@@ -25,51 +25,18 @@ import (
 )
 
 var (
+	PostgresHost string
+	PostgresDb   string
+
 	Db *sql.DB
 )
 
-type User struct {
-	Id          string
-	AccessToken string
-}
+func InitDb() {
+	log.Printf("Connecting to DB: %s", PostgresDb)
 
-func NewUser(access_token string) (u *User) {
-	if access_token == "" {
-		log.Printf("No access_token to add to db\n")
-		return nil
-	}
-
-	u = &User{
-		AccessToken: access_token,
-	}
-
-	err := Db.QueryRow("INSERT INTO users (github_access_token) VALUES ($1) RETURNING id;", u.AccessToken).Scan(&u.Id)
+	var err error
+	Db, err = sql.Open("postgres", fmt.Sprintf("dbname=%s sslmode=disable", PostgresDb))
 	if err != nil {
-		log.Printf("Couldn't add access_token %s", u.AccessToken)
 		log.Fatal(err)
-		return nil
 	}
-
-	fmt.Printf("asd id %s", u.Id)
-	return u
-}
-
-func (i *Issue) Bounties() []Bounty {
-	// SELECT * FROM bounties WHERE issue_id = ?
-	return nil
-}
-
-type Bounty struct {
-}
-
-func NewBounty() {
-
-}
-
-func BountiesOpen() {
-	// SELECT * FROM issues INNER JOIN bounties ON bounties.issue_id = issue.id WHERE bounty_state in ('open', 'paid')
-}
-
-func BountiesRecent() {
-	// SELECT * FROM bounties ORDER BY created_at DESC limit 10
 }

@@ -19,46 +19,30 @@ package main
 
 import (
 	"bytes"
-	"database/sql"
 	"flag"
 	"fmt"
 	. "github.com/abhiyerra/bountyforcode/app/controllers"
 	. "github.com/abhiyerra/bountyforcode/app/models"
 	"github.com/abhiyerra/scalpy"
 	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
 	"log"
 	"net/http"
 	"text/template"
 )
 
 var (
-	postgresHost string
-	postgresDb   string
-
 	domain string
 )
 
-func dbConnect() {
-	log.Printf("Connecting to DB: %s", postgresDb)
-
-	var err error
-	Db, err = sql.Open("postgres", fmt.Sprintf("dbname=%s sslmode=disable", postgresDb))
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 func initConfig() {
-	flag.StringVar(&postgresHost, "pghost", "", "the host for postgres")
-	flag.StringVar(&postgresDb, "dbname", "", "the db for postgres")
+	flag.StringVar(&PostgresHost, "pghost", "", "the host for postgres")
+	flag.StringVar(&PostgresDb, "dbname", "", "the db for postgres")
 	flag.StringVar(&GithubClientId, "github_client_id", "", "github client id")
 	flag.StringVar(&GithubClientSecret, "github_client_secret", "", "github client secret")
 	flag.StringVar(&GithubRedirectUrl, "github_redirect_url", "", "github redirect url")
 	flag.StringVar(&domain, "domain", "", "domain this is running on")
 
 	flag.Parse()
-
 }
 
 // TODO Probably want to use this: https://github.com/codegangsta/martini-contrib/tree/master/render
@@ -254,7 +238,7 @@ func renderDiscover(issues []Issue) string {
 
 func main() {
 	initConfig()
-	dbConnect()
+	InitDb()
 	InitGithub()
 
 	log.Printf("Server running on %s", domain)
