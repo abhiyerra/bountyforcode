@@ -38,13 +38,17 @@ func initConfig() {
 	flag.StringVar(&GithubClientSecret, "github_client_secret", "", "github client secret")
 	flag.StringVar(&GithubRedirectUrl, "github_redirect_url", "", "github redirect url")
 	flag.StringVar(&domain, "domain", "", "domain this is running on")
+	flag.StringVar(&SecretStoreKey, "secret_store_key", "", "Secret session store key")
 
 	flag.Parse()
 }
 
 func main() {
 	initConfig()
+
 	InitDb()
+	InitSessionStore()
+
 	InitGithub()
 
 	log.Printf("Server running on %s", domain)
