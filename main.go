@@ -112,7 +112,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 			Title:    "Welcome",
 			ViewFile: "views/root_index.tmpl",
 		},
-		Discover: renderDiscover(issues),
+		Discover: DiscoverPartial(issues),
 	}
 
 	fmt.Printf("%v, %v\n", page.Title, issues)
@@ -206,7 +206,7 @@ func ProjectRootHandler(w http.ResponseWriter, r *http.Request) {
 			Title:    project_identifier,
 			ViewFile: "views/project_index.tmpl",
 		},
-		Discover: renderDiscover(issues),
+		Discover: DiscoverPartial(issues),
 	}
 
 	fmt.Printf("%v, %v\n", page.Title, issues)
@@ -222,18 +222,6 @@ func ProjectRootHandler(w http.ResponseWriter, r *http.Request) {
 	page.Content = buffer.String()
 
 	page.RenderLayout(w)
-}
-
-func renderDiscover(issues []Issue) string {
-	t, err := template.ParseFiles("views/_discover.tmpl")
-	if err != nil {
-		log.Printf("%v\n", err)
-	}
-
-	buffer := new(bytes.Buffer)
-
-	t.Execute(buffer, issues)
-	return buffer.String()
 }
 
 func main() {
