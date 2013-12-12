@@ -18,13 +18,12 @@
 package main
 
 import (
-	. "bountyforcode/app"
 	"bytes"
 	"database/sql"
 	"flag"
 	"fmt"
+	. "github.com/abhiyerra/bountyforcode/app"
 	"github.com/abhiyerra/scalpy"
-	//	"github.com/abhiyerra/coinbase"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"log"
@@ -39,15 +38,14 @@ var (
 	domain string
 )
 
-func dbConnect() *sql.DB {
+func dbConnect() {
 	log.Printf("Connecting to DB: %s", postgresDb)
 
-	db, err := sql.Open("postgres", fmt.Sprintf("dbname=%s sslmode=disable", postgresDb))
+	var err error
+	Db, err = sql.Open("postgres", fmt.Sprintf("dbname=%s sslmode=disable", postgresDb))
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	return db
 }
 
 func initConfig() {
@@ -60,7 +58,6 @@ func initConfig() {
 
 	flag.Parse()
 
-	InitGithub()
 }
 
 // TODO Probably want to use this: https://github.com/codegangsta/martini-contrib/tree/master/render
@@ -91,7 +88,7 @@ func (p *Page) RenderLayout(w http.ResponseWriter) {
 	var layout string = p.Layout
 
 	if layout == "" {
-		layout = "views/layouts/application.html"
+		layout = "views/layout.tmpl"
 	}
 
 	t, err := template.ParseFiles(layout)
@@ -102,33 +99,69 @@ func (p *Page) RenderLayout(w http.ResponseWriter) {
 	t.Execute(w, p)
 }
 
-func RootHandler(w http.ResponseWriter, r *http.Request) {
-	page := &Page{
-		Title:    "Welcome",
-		ViewFile: "views/bounties/_new.html",
-	}
+func AdminHandler(w http.ResponseWriter, r *http.Request) {
+	//	session, _ := Store.Get(r, "user")
+	// fmt.Fprintf(w, "%v", session.Values["UserId"])
 
-	page.RenderView(w)
+	// button := coinbase.GetButton(&coinbase.ButtonRequest{
+	// 	Name: "Abhi Yerra",
+	// 	Type: "donation",
+	// 	PriceString: "10.00",
+	// 	PriceCurrencyIso: "USD",
+	// })
+
+	// fmt.Printf("%v", button.Response.Button.Code)
+	fmt.Fprintf(w, "hi")
 }
 
-func NewBountyHandler(w http.ResponseWriter, r *http.Request) {
+func RootHandler(w http.ResponseWriter, r *http.Request) {
+	type RootPage struct {
+		Page
+		Discover string
+	}
+
+	issues := FindProjectIssues("abhiyerra")
+
+	page := &RootPage{
+		Page: Page{
+			Title:    "Welcome",
+			ViewFile: "views/root_index.tmpl",
+		},
+		Discover: renderDiscover(issues),
+	}
+
+	fmt.Printf("%v, %v\n", page.Title, issues)
+
+	t, err := template.ParseFiles(page.ViewFile)
+	if err != nil {
+		log.Printf("%v\n", err)
+	}
+
+	buffer := new(bytes.Buffer)
+
+	t.Execute(buffer, page)
+	page.Content = buffer.String()
+
+	page.RenderLayout(w)
+}
+
+func CreateBountyHandler(w http.ResponseWriter, r *http.Request) {
 	page := &Page{
 		Title:    "New Bounty",
-		ViewFile: "views/bounties/_confirm.html",
+		ViewFile: "views/bounty_confirm.tmpl",
 	}
 
 	var vals struct {
 		Repo string
 	}
 
-	issue := scalpy.ScalpUrl(r.FormValue("issue-url"))
-	if issue == nil {
+	fmt.Println("Parse", r.FormValue("issue-url"))
+	scalp := scalpy.ScalpUrl(r.FormValue("issue-url"))
+	if scalp == nil {
 		vals.Repo = "Issue doesn't exist"
 	} else {
-		vals.Repo = issue.Repo
+		log.Printf("%v\n", NewIssue(scalp))
 	}
-
-	IssueFind("123", "123")
 
 	t, err := template.ParseFiles(page.ViewFile)
 	if err != nil {
@@ -146,7 +179,7 @@ func NewBountyHandler(w http.ResponseWriter, r *http.Request) {
 func ShowBountyHandler(w http.ResponseWriter, r *http.Request) {
 	page := &Page{
 		Title:    "New Bounty",
-		ViewFile: "views/bounties/show.html",
+		ViewFile: "views/root_index.tmpl",
 	}
 
 	var vals struct {
@@ -179,18 +212,19 @@ func ProjectRootHandler(w http.ResponseWriter, r *http.Request) {
 
 	type ProjectPage struct {
 		Page
-		Projects []Project
+		Discover string
 	}
 
+	issues := FindProjectIssues(project_identifier)
 	page := &ProjectPage{
 		Page: Page{
 			Title:    project_identifier,
-			ViewFile: "views/projects/show.html",
+			ViewFile: "views/project_index.tmpl",
 		},
+		Discover: renderDiscover(issues),
 	}
 
-	page.Projects = FindProjects(project_identifier)
-	fmt.Printf("%v, %v\n", page.Title, page.Projects)
+	fmt.Printf("%v, %v\n", page.Title, issues)
 
 	t, err := template.ParseFiles(page.ViewFile)
 	if err != nil {
@@ -205,27 +239,41 @@ func ProjectRootHandler(w http.ResponseWriter, r *http.Request) {
 	page.RenderLayout(w)
 }
 
+func renderDiscover(issues []Issue) string {
+	t, err := template.ParseFiles("views/_discover.tmpl")
+	if err != nil {
+		log.Printf("%v\n", err)
+	}
+
+	buffer := new(bytes.Buffer)
+
+	t.Execute(buffer, issues)
+	return buffer.String()
+}
+
 func main() {
 	initConfig()
+	dbConnect()
+	InitGithub()
 
-	Db = dbConnect()
-
-	fmt.Println(domain)
+	log.Printf("Server running on %s", domain)
 	subdom := fmt.Sprintf("{subdomain:[a-z]+}.%s", domain)
-	fmt.Println(subdom)
 
 	m := mux.NewRouter()
 	m.HandleFunc("/", ProjectRootHandler).Host(subdom).Methods("GET")
 	m.HandleFunc("/", RootHandler).Methods("GET")
+
 	m.HandleFunc("/register/activate", RegisterAuthorizeHandler).Methods("GET") // TODO Should be authorize
 	m.HandleFunc("/register", RegisterHandler).Methods("GET")
 
-	m.HandleFunc("/bounties", NewBountyHandler).Methods("POST")
+	m.HandleFunc("/bounties", CreateBountyHandler).Methods("POST")
 	m.HandleFunc("/bounties/{id}", ShowBountyHandler).Methods("POST")
 
 	m.HandleFunc("/search", RootHandler).Methods("GET")
 	m.HandleFunc("/discover", DiscoverHandler).Methods("GET")
 	m.HandleFunc("/pricing", RootHandler).Methods("GET")
+
+	m.HandleFunc("/admin", AdminHandler).Methods("GET")
 
 	http.Handle("/", m)
 	http.ListenAndServe(":3000", nil)

@@ -1,0 +1,28 @@
+<div class="jumbotron">
+  <h1>
+    bountyforcode
+  </h1>
+  <p>
+    Easiest way to get code written for your favorite open source projects.
+  </p>
+  <p>
+    <form class="form-inline"  action="/bounties" method="post">
+      <div class="form-group">
+        <input type="text" name="issue-url" class="form-control input-lg col-lg-8" placeholder="http://github.com/abhiyerra/bountyforcode/issues/1" >
+      </div>
+      <div class="form-group">
+        <button type="submit" class="btn pull-right btn-success btn-lg">
+          Create Bounty
+        </button>
+      </div>
+    </form>
+  </p>
+</div>
+
+<div class="page-header">
+  <h3>
+    Discover
+  </h3>
+
+  {{.Discover}}
+</div>

@@ -1,0 +1,17 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>Repo</th>
+      <th>Issue</th>
+      <th>Bounty Amount</th>
+    </tr>
+    {{range .}}
+    <tr>
+      <td>{{.Repo}}</td>
+      <td>{{.Identifier}}</td>
+      <td><a class="coinbase-button" data-code="{{.CoinbaseButtonCode}}" href="https://coinbase.com/checkouts/{{.CoinbaseButtonCode}}">Pay With Bitcoin</a>
+      </td>
+    </tr>
+    {{end}}
+  </thead>
+</table>

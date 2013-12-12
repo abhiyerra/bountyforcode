@@ -19,55 +19,39 @@ package bountyforcode
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/lib/pq"
 	"log"
-	"strings"
 )
 
 var (
 	Db *sql.DB
 )
 
-type Issue struct {
-	Id          uint
-	Repo        string
-	OriginalUrl string
-	CreatedAt   string
-	BountyTotal float32
+type User struct {
+	Id          string
+	AccessToken string
 }
 
-type Project struct {
-	Repo string
-}
-
-func FindProjects(identifier string) (projects []Project) {
-	rows, err := Db.Query("SELECT repo FROM projects WHERE identifier = $1", strings.ToLower(identifier))
-	if err != nil {
-		log.Println(err)
-	}
-
-	if rows == nil {
-		// TODO go get projects
+func NewUser(access_token string) (u *User) {
+	if access_token == "" {
+		log.Printf("No access_token to add to db\n")
 		return nil
 	}
 
-	for rows.Next() {
-		var project Project
-		rows.Scan(&project.Repo)
-
-		projects = append(projects, project)
+	u = &User{
+		AccessToken: access_token,
 	}
 
-	return projects
-}
+	err := Db.QueryRow("INSERT INTO users (github_access_token) VALUES ($1) RETURNING id;", u.AccessToken).Scan(&u.Id)
+	if err != nil {
+		log.Printf("Couldn't add access_token %s", u.AccessToken)
+		log.Fatal(err)
+		return nil
+	}
 
-func IssueFind(project, repo string) {
-	// SELECT * FROM issues WHERE project = ? AND repo = ?
-}
-
-func NewIssue() *Issue {
-
-	return &Issue{}
+	fmt.Printf("asd id %s", u.Id)
+	return u
 }
 
 func (i *Issue) Bounties() []Bounty {

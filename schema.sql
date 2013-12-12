@@ -13,7 +13,7 @@ CREATE TABLE users (
    username varchar(255),
    password varchar(255),
    salt varchar(255),
-   github_identifier varchar(255),
+   github_access_token varchar(255),
    created_at timestamp default now(),
    updated_at timestamp default now()
 );
@@ -25,21 +25,17 @@ CREATE TRIGGER update_users_updated_at BEFORE UPDATE
 
 CREATE TYPE hosting_provider AS ENUM ('github');
 
-CREATE TABLE projects (
-   id serial primary key,
-   hoster hosting_provider,
-   identifier varchar(255),
-   repo varchar(255),
-   created_at timestamp default now(),
-   updated_at timestamp default now()
-);
-
-
 CREATE TABLE issues (
    id serial primary key,
    original_url varchar(255),
-   host_identifier varchar(20),
-   project_id serial references projects(id),
+
+   hoster hosting_provider,
+   project varchar(255),
+   repo varchar(255),
+   identifier varchar(20),
+
+   coinbase_button_code varchar(100),
+
    created_at timestamp default now(),
    updated_at timestamp default now()
 );
