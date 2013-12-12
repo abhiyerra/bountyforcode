@@ -45,45 +45,6 @@ func initConfig() {
 	flag.Parse()
 }
 
-// TODO Probably want to use this: https://github.com/codegangsta/martini-contrib/tree/master/render
-type Page struct {
-	Title string
-	Body  string
-
-	Content string
-
-	ViewFile string
-	Layout   string
-}
-
-func (p *Page) RenderView(w http.ResponseWriter) {
-	t, err := template.ParseFiles(p.ViewFile)
-	if err != nil {
-		log.Printf("%v\n", err)
-	}
-
-	buffer := new(bytes.Buffer)
-
-	t.Execute(buffer, p)
-	p.Content = buffer.String()
-	p.RenderLayout(w)
-}
-
-func (p *Page) RenderLayout(w http.ResponseWriter) {
-	var layout string = p.Layout
-
-	if layout == "" {
-		layout = "views/layout.tmpl"
-	}
-
-	t, err := template.ParseFiles(layout)
-	if err != nil {
-		log.Printf("%v\n", err)
-	}
-
-	t.Execute(w, p)
-}
-
 func AdminHandler(w http.ResponseWriter, r *http.Request) {
 	//	session, _ := Store.Get(r, "user")
 	// fmt.Fprintf(w, "%v", session.Values["UserId"])
@@ -187,43 +148,6 @@ func ShowBountyHandler(w http.ResponseWriter, r *http.Request) {
 	page.RenderLayout(w)
 }
 
-func DiscoverHandler(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func ProjectRootHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	project_identifier := vars["subdomain"]
-
-	type ProjectPage struct {
-		Page
-		Discover string
-	}
-
-	issues := FindProjectIssues(project_identifier)
-	page := &ProjectPage{
-		Page: Page{
-			Title:    project_identifier,
-			ViewFile: "views/project_index.tmpl",
-		},
-		Discover: DiscoverPartial(issues),
-	}
-
-	fmt.Printf("%v, %v\n", page.Title, issues)
-
-	t, err := template.ParseFiles(page.ViewFile)
-	if err != nil {
-		log.Printf("%v\n", err)
-	}
-
-	buffer := new(bytes.Buffer)
-
-	t.Execute(buffer, page)
-	page.Content = buffer.String()
-
-	page.RenderLayout(w)
-}
-
 func main() {
 	initConfig()
 	InitDb()
@@ -242,8 +166,6 @@ func main() {
 	m.HandleFunc("/bounties", CreateBountyHandler).Methods("POST")
 	m.HandleFunc("/bounties/{id}", ShowBountyHandler).Methods("POST")
 
-	m.HandleFunc("/search", RootHandler).Methods("GET")
-	m.HandleFunc("/discover", DiscoverHandler).Methods("GET")
 	m.HandleFunc("/pricing", RootHandler).Methods("GET")
 
 	m.HandleFunc("/admin", AdminHandler).Methods("GET")
