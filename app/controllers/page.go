@@ -1,6 +1,7 @@
 package bountyforcode
 
 import (
+	"bytes"
 	"log"
 	"net/http"
 	"text/template"
@@ -29,4 +30,16 @@ func (p *Page) RenderLayout(w http.ResponseWriter) {
 	}
 
 	t.Execute(w, p)
+}
+
+func RenderPartial(view string, i interface{}) string {
+	t, err := template.ParseFiles(view)
+	if err != nil {
+		log.Printf("%v\n", err)
+	}
+
+	buffer := new(bytes.Buffer)
+
+	t.Execute(buffer, i)
+	return buffer.String()
 }

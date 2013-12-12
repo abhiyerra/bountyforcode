@@ -22,7 +22,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 			Title:    "Welcome",
 			ViewFile: "views/root_index.tmpl",
 		},
-		Discover: DiscoverPartial(issues),
+		Discover: RenderPartial("views/partials/_discover.html", issues),
 	}
 
 	fmt.Printf("%v, %v\n", page.Title, issues)
