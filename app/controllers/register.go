@@ -44,11 +44,10 @@ func RegisterAuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	token, _ := transport.Exchange(code)
 
 	log.Printf("New Token %v\n", token)
-	user := NewUser(token.AccessToken)
 
-	session, _ := Store.Get(r, "user")
-	session.Values["UserId"] = user.Id
-	session.Save(r, w)
+	if user := NewUser(token.AccessToken); user != nil {
+		SetSessionUserId(w, r, user.Id)
+	}
 
-	fmt.Fprintf(w, token.AccessToken)
+	http.Redirect(w, r, "/", 302)
 }

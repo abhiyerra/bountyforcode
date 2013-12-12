@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/abhiyerra/coinbase"
 	"github.com/abhiyerra/scalpy"
-	_ "github.com/lib/pq"
 	"log"
 	"strings"
 )

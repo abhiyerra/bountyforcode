@@ -3,6 +3,7 @@ package bountyforcode
 import (
 	"github.com/gorilla/sessions"
 	"log"
+	"net/http"
 )
 
 var (
@@ -16,4 +17,21 @@ func InitSessionStore() {
 	}
 
 	Store = sessions.NewCookieStore([]byte("something-very-secret"))
+}
+
+func GetSessionUserId(r *http.Request) string {
+	session, _ := Store.Get(r, "user")
+	user_id := session.Values["UserId"]
+
+	if str, ok := user_id.(string); ok {
+		return str
+	} else {
+		return ""
+	}
+}
+
+func SetSessionUserId(w http.ResponseWriter, r *http.Request, user_id string) {
+	session, _ := Store.Get(r, "user")
+	session.Values["UserId"] = user_id
+	session.Save(r, w)
 }
