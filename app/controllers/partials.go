@@ -8,7 +8,7 @@ import (
 )
 
 func DiscoverPartial(issues []Issue) string {
-	t, err := template.ParseFiles("views/_discover.tmpl")
+	t, err := template.ParseFiles("views/partials/_discover.html")
 	if err != nil {
 		log.Printf("%v\n", err)
 	}
