@@ -18,16 +18,13 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	. "github.com/abhiyerra/bountyforcode/app/controllers"
 	. "github.com/abhiyerra/bountyforcode/app/models"
-	"github.com/abhiyerra/scalpy"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"text/template"
 )
 
 var (
@@ -45,119 +42,18 @@ func initConfig() {
 	flag.Parse()
 }
 
-func AdminHandler(w http.ResponseWriter, r *http.Request) {
-	//	session, _ := Store.Get(r, "user")
-	// fmt.Fprintf(w, "%v", session.Values["UserId"])
-
-	// button := coinbase.GetButton(&coinbase.ButtonRequest{
-	// 	Name: "Abhi Yerra",
-	// 	Type: "donation",
-	// 	PriceString: "10.00",
-	// 	PriceCurrencyIso: "USD",
-	// })
-
-	// fmt.Printf("%v", button.Response.Button.Code)
-	fmt.Fprintf(w, "hi")
-}
-
-func RootHandler(w http.ResponseWriter, r *http.Request) {
-	type RootPage struct {
-		Page
-		Discover string
-	}
-
-	issues := FindProjectIssues("abhiyerra")
-
-	page := &RootPage{
-		Page: Page{
-			Title:    "Welcome",
-			ViewFile: "views/root_index.tmpl",
-		},
-		Discover: DiscoverPartial(issues),
-	}
-
-	fmt.Printf("%v, %v\n", page.Title, issues)
-
-	t, err := template.ParseFiles(page.ViewFile)
-	if err != nil {
-		log.Printf("%v\n", err)
-	}
-
-	buffer := new(bytes.Buffer)
-
-	t.Execute(buffer, page)
-	page.Content = buffer.String()
-
-	page.RenderLayout(w)
-}
-
-func CreateBountyHandler(w http.ResponseWriter, r *http.Request) {
-	page := &Page{
-		Title:    "New Bounty",
-		ViewFile: "views/bounty_confirm.tmpl",
-	}
-
-	var vals struct {
-		Repo string
-	}
-
-	fmt.Println("Parse", r.FormValue("issue-url"))
-	scalp := scalpy.ScalpUrl(r.FormValue("issue-url"))
-	if scalp == nil {
-		vals.Repo = "Issue doesn't exist"
-	} else {
-		log.Printf("%v\n", NewIssue(scalp))
-	}
-
-	t, err := template.ParseFiles(page.ViewFile)
-	if err != nil {
-		log.Printf("%v\n", err)
-	}
-
-	buffer := new(bytes.Buffer)
-
-	t.Execute(buffer, vals)
-	page.Content = buffer.String()
-
-	page.RenderLayout(w)
-}
-
-func ShowBountyHandler(w http.ResponseWriter, r *http.Request) {
-	page := &Page{
-		Title:    "New Bounty",
-		ViewFile: "views/root_index.tmpl",
-	}
-
-	var vals struct {
-		Repo        string
-		OriginalUrl string
-	}
-
-	vals.OriginalUrl = "123"
-
-	t, err := template.ParseFiles(page.ViewFile)
-	if err != nil {
-		log.Printf("%v\n", err)
-	}
-
-	buffer := new(bytes.Buffer)
-
-	t.Execute(buffer, vals)
-	page.Content = buffer.String()
-
-	page.RenderLayout(w)
-}
-
 func main() {
 	initConfig()
 	InitDb()
 	InitGithub()
 
 	log.Printf("Server running on %s", domain)
-	subdom := fmt.Sprintf("{subdomain:[a-z]+}.%s", domain)
 
 	m := mux.NewRouter()
+
+	subdom := fmt.Sprintf("{subdomain:[a-z]+}.%s", domain)
 	m.HandleFunc("/", ProjectRootHandler).Host(subdom).Methods("GET")
+
 	m.HandleFunc("/", RootHandler).Methods("GET")
 
 	m.HandleFunc("/register/activate", RegisterAuthorizeHandler).Methods("GET") // TODO Should be authorize
