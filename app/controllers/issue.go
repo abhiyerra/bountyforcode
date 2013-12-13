@@ -66,3 +66,8 @@ func ShowBountyHandler(w http.ResponseWriter, r *http.Request) {
 
 	page.RenderLayout(w)
 }
+
+func CoinbaseCallbackHandler(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Fprintf(w, "ok")
+}

@@ -41,6 +41,7 @@ func initConfig() {
 	flag.StringVar(&domain, "domain", "", "domain this is running on")
 	flag.StringVar(&SecretStoreKey, "secret_store_key", "", "Secret session store key")
 	flag.StringVar(&coinbase.CoinbaseApiKey, "coinbase_api_key", "", "Coinbase API Key")
+	flag.StringVar(&coinbase.CoinbaseCallbackSecret, "coinbase_callback_secret", "", "Coinbase Callback Secret")
 
 	flag.Parse()
 }
@@ -68,6 +69,11 @@ func main() {
 	m.HandleFunc("/bounties", CreateBountyHandler).Methods("POST")
 	m.HandleFunc("/bounties/{id}", ShowBountyHandler).Methods("POST")
 
+	if coinbase.CoinbaseCallbackSecret == "" {
+		log.Fatal("CoinbaseCallbackSecret can't be empty")
+	}
+	coinbase_callback_path := fmt.Sprintf("/coinbase/callback/%s", coinbase.CoinbaseCallbackSecret)
+	m.HandleFunc(coinbase_callback_path, CoinbaseCallbackHandler).Methods("POST")
 	m.HandleFunc("/pricing", RootHandler).Methods("GET")
 
 	m.HandleFunc("/admin", AdminHandler).Methods("GET")
