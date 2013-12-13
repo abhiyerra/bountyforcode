@@ -66,8 +66,9 @@ func main() {
 	m.HandleFunc("/register/activate", RegisterAuthorizeHandler).Methods("GET") // TODO Should be authorize
 	m.HandleFunc("/register", RegisterHandler).Methods("GET")
 
-	m.HandleFunc("/bounties", CreateBountyHandler).Methods("POST")
-	m.HandleFunc("/bounties/{id}", ShowBountyHandler).Methods("POST")
+	m.HandleFunc("/issues", CreateIssueHandler).Methods("POST")
+	m.HandleFunc("/issues/{id}", ShowIssueHandler).Methods("GET")
+	m.HandleFunc("/issues/{id}/contribute", ContributeIssueHandler).Methods("GET")
 
 	if coinbase.CoinbaseCallbackSecret == "" {
 		log.Fatal("CoinbaseCallbackSecret can't be empty")

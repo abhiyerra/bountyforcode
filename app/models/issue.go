@@ -26,8 +26,21 @@ func (i *Issue) GetCoinbaseButton() {
 
 }
 
-func IssueFind(project, repo string) {
-	// SELECT * FROM issues WHERE project = ? AND repo = ?
+func FindIssue(id string) (i *Issue) {
+	i = new(Issue)
+
+	err := Db.QueryRow(`SELECT id, project, repo, identifier, coinbase_button_code FROM issues WHERE id = $1`, id).Scan(&i.Id, &i.Project, &i.Repo, &i.Identifier, &i.CoinbaseButtonCode)
+
+	switch {
+	case err == sql.ErrNoRows:
+		return nil
+	case err != nil:
+		log.Fatal(err)
+	default:
+		fmt.Printf("IssueId is %s\n", i.Id)
+	}
+
+	return i
 }
 
 func FindProjectIssues(project string) (issues []Issue) {
