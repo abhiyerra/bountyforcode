@@ -41,15 +41,21 @@ CREATE TRIGGER update_issues_updated_at BEFORE UPDATE
         ON issues FOR EACH ROW EXECUTE PROCEDURE
         update_updated_at_column();
 
-CREATE TYPE bounty_state as ENUM ('open', 'paid', 'closed', 'cancelled');
+
+
+
+
+
+
+CREATE TYPE bounty_state as ENUM ('new', 'paid', 'closed', 'cancelled');
 
 CREATE TABLE bounties (
    id serial primary key,
    user_id serial references users(id),
    issue_id serial references issues(id),
    amount float,
-   transaction_status bounty_state,
-   expires_at timestamp,
+   coinbase_button_code string
+   status bounty_state,
    created_at timestamp default now(),
    updated_at timestamp default now()
 );

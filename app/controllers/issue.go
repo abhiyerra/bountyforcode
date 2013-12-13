@@ -55,7 +55,7 @@ func ShowIssueHandler(w http.ResponseWriter, r *http.Request) {
 	page := &IssuePage{
 		Page: Page{
 			Title:    "New Bounty",
-			ViewFile: "views/root_index.tmpl",
+			ViewFile: GetView("root_index.tmpl"),
 		},
 		Issue: issue,
 	}
@@ -89,7 +89,7 @@ func ContributeIssueHandler(w http.ResponseWriter, r *http.Request) {
 	page := &IssuePage{
 		Page: Page{
 			Title:    "Contribute Bounty",
-			ViewFile: "views/issues/contribute.tmpl",
+			ViewFile: GetView("issues/contribute.tmpl"),
 		},
 		Issue: issue,
 	}

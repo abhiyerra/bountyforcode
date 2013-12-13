@@ -20,9 +20,9 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 	page := &RootPage{
 		Page: Page{
 			Title:    "Welcome",
-			ViewFile: "views/root_index.tmpl",
+			ViewFile: GetView("root_index.tmpl"),
 		},
-		Discover: RenderPartial("views/partials/_discover.html", issues),
+		Discover: RenderPartial(GetView("partials/_discover.html"), issues),
 	}
 
 	fmt.Printf("%v, %v\n", page.Title, issues)

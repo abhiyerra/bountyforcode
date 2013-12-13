@@ -20,6 +20,7 @@ package bountyforcode
 import (
 	"database/sql"
 	"fmt"
+	"github.com/coopernurse/gorp"
 	_ "github.com/lib/pq"
 	"log"
 )
@@ -28,7 +29,8 @@ var (
 	PostgresHost string
 	PostgresDb   string
 
-	Db *sql.DB
+	Db    *sql.DB
+	DbMap *gorp.DbMap
 )
 
 func InitDb() {
@@ -39,4 +41,11 @@ func InitDb() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	DbMap := &gorp.DbMap{Db: Db, Dialect: gorp.PostgresDialect{}}
+	DbMap.AddTableWithName(Bounty{}, "bounties").SetKeys(true, "Id")
+}
+
+func CloseDb() {
+	DbMap.Db.Close()
 }

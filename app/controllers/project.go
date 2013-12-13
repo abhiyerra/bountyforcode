@@ -23,9 +23,9 @@ func ProjectRootHandler(w http.ResponseWriter, r *http.Request) {
 	page := &ProjectPage{
 		Page: Page{
 			Title:    project_identifier,
-			ViewFile: "views/project_index.tmpl",
+			ViewFile: GetView("project_index.tmpl"),
 		},
-		Discover: RenderPartial("views/partials/_discover.html", issues),
+		Discover: RenderPartial(GetView("partials/_discover.html"), issues),
 	}
 
 	fmt.Printf("%v, %v\n", page.Title, issues)

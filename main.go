@@ -40,6 +40,7 @@ func initConfig() {
 	flag.StringVar(&GithubRedirectUrl, "github_redirect_url", "", "github redirect url")
 	flag.StringVar(&domain, "domain", "", "domain this is running on")
 	flag.StringVar(&SecretStoreKey, "secret_store_key", "", "Secret session store key")
+	flag.StringVar(&HtmlDir, "html_dir", "", "Location of the html files")
 	flag.StringVar(&coinbase.CoinbaseApiKey, "coinbase_api_key", "", "Coinbase API Key")
 	flag.StringVar(&coinbase.CoinbaseCallbackSecret, "coinbase_callback_secret", "", "Coinbase Callback Secret")
 
@@ -51,8 +52,9 @@ func main() {
 
 	InitDb()
 	InitSessionStore()
-
 	InitGithub()
+
+	defer CloseDb()
 
 	log.Printf("Server running on %s", domain)
 

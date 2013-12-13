@@ -19,7 +19,7 @@ func (p *Page) RenderLayout(w http.ResponseWriter) {
 	var layout string = p.Layout
 
 	if layout == "" {
-		layout = "views/layout.tmpl"
+		layout = GetView("layout.tmpl")
 	}
 
 	t, err := template.ParseFiles(layout)
