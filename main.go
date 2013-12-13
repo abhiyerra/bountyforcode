@@ -22,6 +22,7 @@ import (
 	"fmt"
 	. "github.com/abhiyerra/bountyforcode/app/controllers"
 	. "github.com/abhiyerra/bountyforcode/app/models"
+	"github.com/abhiyerra/coinbase"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -39,6 +40,7 @@ func initConfig() {
 	flag.StringVar(&GithubRedirectUrl, "github_redirect_url", "", "github redirect url")
 	flag.StringVar(&domain, "domain", "", "domain this is running on")
 	flag.StringVar(&SecretStoreKey, "secret_store_key", "", "Secret session store key")
+	flag.StringVar(&coinbase.CoinbaseApiKey, "coinbase_api_key", "", "Coinbase API Key")
 
 	flag.Parse()
 }

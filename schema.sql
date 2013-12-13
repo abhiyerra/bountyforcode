@@ -10,9 +10,6 @@ CREATE OR REPLACE FUNCTION update_updated_at_column()
 
 CREATE TABLE users (
    id serial primary key,
-   username varchar(255),
-   password varchar(255),
-   salt varchar(255),
    github_access_token varchar(255),
    created_at timestamp default now(),
    updated_at timestamp default now()
