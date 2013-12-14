@@ -2,28 +2,33 @@ package bountyforcode
 
 import (
 	"github.com/abhiyerra/coinbase"
+	"github.com/coopernurse/gorp"
+	"log"
 )
 
-type BountyState string
-
 const (
-	New       BountyState = "new"
-	Paid      BountyState = "paid"
-	Closed    BountyState = "closed"
-	Cancelled BountyState = "cancelled"
+	New       string = "new"
+	Paid      string = "paid"
+	Closed    string = "closed"
+	Cancelled string = "cancelled"
 )
 
 type Bounty struct {
-	Id      uint
-	UserId  uint
-	IssueId uint
-	Amount  float32
-
-	CoinbaseButtonCode string `db:"coinbase_button_code"`
-	Status             BountyState
+	Id                 int     `db:"id"`
+	UserId             string  `db:"user_id"`
+	IssueId            string  `db:"issue_id"`
+	Amount             float32 `db:"amount"`
+	CoinbaseButtonCode string  `db:"coinbase_button_code"`
+	Status             string  `db:"status"`
 }
 
-func NewBounty() (b *Bounty) {
+func NewBounty(issue *Issue, user_id string) (b *Bounty) {
+	b = &Bounty{
+		UserId:  user_id,
+		IssueId: issue.Id,
+		Status:  New,
+	}
+
 	button := coinbase.GetButton(&coinbase.ButtonRequest{
 		Name:             "Abhi Yerra",
 		Type:             "donation",
@@ -33,6 +38,14 @@ func NewBounty() (b *Bounty) {
 
 	if button.Response.Success {
 		b.CoinbaseButtonCode = button.Response.Button.Code
+	}
+
+	DbMap := &gorp.DbMap{Db: Db, Dialect: gorp.PostgresDialect{}}
+	DbMap.AddTableWithName(Bounty{}, "bounties").SetKeys(true, "Id")
+
+	err := DbMap.Insert(b)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	return b

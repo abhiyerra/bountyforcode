@@ -28,20 +28,21 @@ func CreateIssueHandler(w http.ResponseWriter, r *http.Request) {
 
 type IssuePage struct {
 	Page
-	Issue *Issue
+	Issue  *Issue
+	bounty *Bounty
 }
 
 func GetIssue(r *http.Request) (issue *Issue) {
 	vars := mux.Vars(r)
 	issue_id := vars["id"]
-	
+
 	log.Printf("%v\n", vars)
 	issue = FindIssue(issue_id)
 	if issue == nil {
 		log.Printf("Can't find issue %s\n", issue_id)
 		return nil
 	}
-	
+
 	return issue
 }
 
@@ -51,7 +52,7 @@ func ShowIssueHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Can't find issue")
 		return
 	}
-	
+
 	page := &IssuePage{
 		Page: Page{
 			Title:    "New Bounty",
@@ -76,6 +77,7 @@ func ShowIssueHandler(w http.ResponseWriter, r *http.Request) {
 func ContributeIssueHandler(w http.ResponseWriter, r *http.Request) {
 	if GetSessionUserId(r) == "" {
 		http.Redirect(w, r, "/register", 302)
+		return
 	}
 
 	issue := GetIssue(r)
@@ -84,14 +86,19 @@ func ContributeIssueHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Generate the CoinbaseButton here so we have an identifier for who donated
-	// TODO: Insert into bounties (coinbase_button, user_id, issue_id) 
+	bounty := NewBounty(issue, GetSessionUserId(r))
+	if bounty == nil {
+		fmt.Fprintf(w, "Can't create bounty")
+		return
+	}
+
 	page := &IssuePage{
 		Page: Page{
 			Title:    "Contribute Bounty",
 			ViewFile: GetView("issues/contribute.tmpl"),
 		},
-		Issue: issue,
+		Issue:  issue,
+		Bounty: bounty,
 	}
 
 	t, err := template.ParseFiles(page.ViewFile)
