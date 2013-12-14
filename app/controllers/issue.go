@@ -29,7 +29,7 @@ func CreateIssueHandler(w http.ResponseWriter, r *http.Request) {
 type IssuePage struct {
 	Page
 	Issue  *Issue
-	bounty *Bounty
+	Bounty *Bounty
 }
 
 func GetIssue(r *http.Request) (issue *Issue) {

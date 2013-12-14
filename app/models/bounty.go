@@ -2,7 +2,6 @@ package bountyforcode
 
 import (
 	"github.com/abhiyerra/coinbase"
-	"github.com/coopernurse/gorp"
 	"log"
 )
 
@@ -39,9 +38,6 @@ func NewBounty(issue *Issue, user_id string) (b *Bounty) {
 	if button.Response.Success {
 		b.CoinbaseButtonCode = button.Response.Button.Code
 	}
-
-	DbMap := &gorp.DbMap{Db: Db, Dialect: gorp.PostgresDialect{}}
-	DbMap.AddTableWithName(Bounty{}, "bounties").SetKeys(true, "Id")
 
 	err := DbMap.Insert(b)
 	if err != nil {
