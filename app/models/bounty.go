@@ -6,10 +6,10 @@ import (
 )
 
 const (
-	New       string = "new"
-	Paid      string = "paid"
-	Closed    string = "closed"
-	Cancelled string = "cancelled"
+	BountyStateNew       string = "new"
+	BountyStatePaid      string = "paid"
+	BountyStateClosed    string = "closed"
+	BountyStateCancelled string = "cancelled"
 )
 
 type Bounty struct {
@@ -25,14 +25,19 @@ func NewBounty(issue *Issue, user_id string) (b *Bounty) {
 	b = &Bounty{
 		UserId:  user_id,
 		IssueId: issue.Id,
-		Status:  New,
+		Status:  BountyStateNew,
 	}
 
 	button := coinbase.GetButton(&coinbase.ButtonRequest{
-		Name:             "Abhi Yerra",
+		Name:             "Abhi Yerra", // TODO: This should be the Issue Id
 		Type:             "donation",
 		PriceString:      "10.00",
 		PriceCurrencyIso: "USD",
+		Custom:           user_id,
+		Style:            "donation_large",
+		VariablePrice:    true,
+		ChoosePrice:      true,
+		// TODO: Include some prices
 	})
 
 	if button.Response.Success {
