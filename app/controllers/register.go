@@ -2,7 +2,6 @@ package bountyforcode
 
 import (
 	"code.google.com/p/goauth2/oauth"
-	"encoding/json"
 	"fmt"
 	. "github.com/abhiyerra/bountyforcode/app/models"
 	"log"
@@ -67,6 +66,5 @@ func RegisterAuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserSessionHandler(w http.ResponseWriter, r *http.Request) {
-	b, _ := json.Marshal(GetSessionUserId(r) != "")
-	w.Write(b)
+	RenderJson(w, GetSessionUserId(r) != "")
 }
