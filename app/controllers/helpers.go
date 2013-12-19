@@ -1,14 +1,15 @@
 package bountyforcode
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/gorilla/sessions"
 	"log"
-	"fmt"
 	"net/http"
 )
 
 var (
-	HtmlDir        string   
+	HtmlDir        string
 	Store          *sessions.CookieStore
 	SecretStoreKey string
 )
@@ -38,7 +39,15 @@ func SetSessionUserId(w http.ResponseWriter, r *http.Request, user_id string) {
 	session.Save(r, w)
 }
 
-func GetView(view string) string {
-	fmt.Println(HtmlDir)
-	return fmt.Sprintf("%s/%s", HtmlDir, view)
+func RenderJson(w http.ResponseWriter, page interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Printf("%v", page)
+
+	b, err := json.Marshal(page)
+	if err != nil {
+		log.Println("error:", err)
+		fmt.Fprintf(w, "")
+	}
+
+	w.Write(b)
 }

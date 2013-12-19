@@ -3,6 +3,8 @@ package bountyforcode
 import (
 	"github.com/abhiyerra/coinbase"
 	"log"
+	"strconv"
+	"time"
 )
 
 const (
@@ -13,15 +15,20 @@ const (
 )
 
 type Bounty struct {
-	Id                 int     `db:"id"`
-	UserId             string  `db:"user_id"`
-	IssueId            string  `db:"issue_id"`
-	Amount             float32 `db:"amount"`
-	CoinbaseButtonCode string  `db:"coinbase_button_code"`
-	Status             string  `db:"status"`
+	Id                  int       `db:"id" json:"id"`
+	UserId              int       `db:"user_id" json:"user_id"`
+	IssueId             int       `db:"issue_id" json:"issue_id"`
+	Amount              float32   `db:"amount" json:"amount"`
+	CoinbaseButtonCode  string    `db:"coinbase_button_code" json:"coinbase_button_code"`
+	CoinbaseOrderId     string    `db:"coinbase_order_id" json:"-"`
+	CoinbaseTotalBtc    int       `db:"coinbase_total_btc" json:"coinbase_total_btc"`
+	CoinbaseCurrencyIso string    `db:"coinbase_currency_iso" json:"coinbase_currency_iso"`
+	Status              string    `db:"status" json:"status"`
+	CreatedAt           time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt           time.Time `db:"updated_at" json:"updated_at"`
 }
 
-func NewBounty(issue *Issue, user_id string) (b *Bounty) {
+func NewBounty(issue *Issue, user_id int) (b *Bounty) {
 	b = &Bounty{
 		UserId:  user_id,
 		IssueId: issue.Id,
@@ -33,7 +40,7 @@ func NewBounty(issue *Issue, user_id string) (b *Bounty) {
 		Type:             "donation",
 		PriceString:      "10.00",
 		PriceCurrencyIso: "USD",
-		Custom:           user_id,
+		Custom:           strconv.Itoa(user_id),
 		Style:            "donation_large",
 		VariablePrice:    true,
 		ChoosePrice:      true,
@@ -44,19 +51,32 @@ func NewBounty(issue *Issue, user_id string) (b *Bounty) {
 		b.CoinbaseButtonCode = button.Response.Button.Code
 	}
 
-	err := DbMap.Insert(b)
-	if err != nil {
+	if err := DbMap.Insert(b); err != nil {
 		log.Fatal(err)
 	}
 
-	return b
-
+	return
 }
 
-func BountiesOpen() {
-	// SELECT * FROM issues INNER JOIN bounties ON bounties.issue_id = issue.id WHERE bounty_state in ('open', 'paid')
+func FindBountyByCoinbaseButtonCode(coinbase_code string) (b *Bounty) {
+	err := DbMap.SelectOne(b, "SELECT * FROM bounties WHERE coinbase_button_code = $1", coinbase_code)
+	if err != nil {
+		log.Printf("FindBountyByCoinbaseCode failed %v\n", err)
+		return nil
+	}
+
+	return
 }
 
-func BountiesRecent() {
-	// SELECT * FROM bounties ORDER BY created_at DESC limit 10
+func (b *Bounty) UpdateCoinbaseInfo(order coinbase.Order) {
+	b.CoinbaseOrderId = order.Id
+	b.CoinbaseTotalBtc = order.TotalBtc.Cents
+	b.CoinbaseCurrencyIso = order.TotalBtc.CurrencyIso
+
+	count, err := DbMap.Update(b)
+	if err != nil {
+		log.Printf("FindBountyByCoinbaseCode failed %v\n", err)
+	}
+
+	log.Println("Rows updated:", count)
 }

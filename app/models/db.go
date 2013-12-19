@@ -44,6 +44,8 @@ func InitDb() {
 
 	DbMap = &gorp.DbMap{Db: Db, Dialect: gorp.PostgresDialect{}}
 	DbMap.AddTableWithName(Bounty{}, "bounties").SetKeys(true, "Id")
+	DbMap.AddTableWithName(Issue{}, "issues").SetKeys(true, "Id")
+	DbMap.AddTableWithName(User{}, "users").SetKeys(true, "Id")
 }
 
 func CloseDb() {

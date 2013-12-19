@@ -7,14 +7,14 @@ import (
 )
 
 type User struct {
-	Id          string
-	AccessToken string
+	Id          string `db:"id" json:"id"`
+	AccessToken string `db:"access_token" json:"access_token"`
 }
 
 func NewUser(access_token string) (u *User) {
 	if access_token == "" {
 		log.Printf("No access_token to add to db\n")
-		return nil
+		return
 	}
 
 	u = &User{

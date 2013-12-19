@@ -32,7 +32,7 @@ var (
 	domain string
 )
 
-func initConfig() {
+func InitConfig() {
 	flag.StringVar(&PostgresHost, "pghost", "", "the host for postgres")
 	flag.StringVar(&PostgresDb, "dbname", "", "the db for postgres")
 	flag.StringVar(&GithubClientId, "github_client_id", "", "github client id")
@@ -45,11 +45,14 @@ func initConfig() {
 	flag.StringVar(&coinbase.CoinbaseCallbackSecret, "coinbase_callback_secret", "", "Coinbase Callback Secret")
 
 	flag.Parse()
+
+	if coinbase.CoinbaseCallbackSecret == "" {
+		log.Fatal("CoinbaseCallbackSecret can't be empty")
+	}
 }
 
 func main() {
-	initConfig()
-
+	InitConfig()
 	InitDb()
 	InitSessionStore()
 	InitGithub()
@@ -59,25 +62,14 @@ func main() {
 	log.Printf("Server running on %s", domain)
 
 	m := mux.NewRouter()
-
-	subdom := fmt.Sprintf("{subdomain:[a-z]+}.%s", domain)
-	m.HandleFunc("/", ProjectRootHandler).Host(subdom).Methods("GET")
-
-	m.HandleFunc("/", RootHandler).Methods("GET")
-
-	m.HandleFunc("/register/activate", RegisterAuthorizeHandler).Methods("GET") // TODO Should be authorize
-	m.HandleFunc("/register", RegisterHandler).Methods("GET")
-
-	m.HandleFunc("/issues", CreateIssueHandler).Methods("POST")
-	m.HandleFunc("/issues/{id}", ShowIssueHandler).Methods("GET")
-	m.HandleFunc("/issues/{id}/contribute", ContributeIssueHandler).Methods("GET")
-
-	if coinbase.CoinbaseCallbackSecret == "" {
-		log.Fatal("CoinbaseCallbackSecret can't be empty")
-	}
-	coinbase_callback_path := fmt.Sprintf("/coinbase/callback/%s", coinbase.CoinbaseCallbackSecret)
-	m.HandleFunc(coinbase_callback_path, CoinbaseCallbackHandler).Methods("POST")
-	m.HandleFunc("/pricing", RootHandler).Methods("GET")
+	m.HandleFunc("/v1/register/activate", RegisterAuthorizeHandler).Methods("GET") // TODO Should be authorize
+	m.HandleFunc("/v1/register", RegisterHandler).Methods("GET")
+	m.HandleFunc("/v1/projects/{subdomain:[a-z]+}/issues", ProjectIssuesHandler).Methods("GET")
+	m.HandleFunc("/v1/issues", IssuesHandler).Methods("GET")
+	m.HandleFunc("/v1/issues", CreateIssueHandler).Methods("POST")
+	m.HandleFunc("/v1/issues/{id}", ShowIssueHandler).Methods("GET")
+	m.HandleFunc("/v1/issues/{id}/bounty", NewBountyHandler).Methods("GET")
+	m.HandleFunc(fmt.Sprintf("/v1/coinbase/%s", coinbase.CoinbaseCallbackSecret), CoinbaseCallbackHandler).Methods("POST")
 
 	m.HandleFunc("/admin", AdminHandler).Methods("GET")
 
