@@ -64,6 +64,7 @@ func main() {
 	m := mux.NewRouter()
 	m.HandleFunc("/v1/register/activate", RegisterAuthorizeHandler).Methods("GET") // TODO Should be authorize
 	m.HandleFunc("/v1/register", RegisterHandler).Methods("GET")
+	m.HandleFunc("/v1/user", UserSessionHandler).Methods("GET")
 	m.HandleFunc("/v1/projects/{subdomain:[a-z]+}/issues", ProjectIssuesHandler).Methods("GET")
 	m.HandleFunc("/v1/issues", IssuesHandler).Methods("GET")
 	m.HandleFunc("/v1/issues", CreateIssueHandler).Methods("POST")
