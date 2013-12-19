@@ -14,6 +14,11 @@ var (
 	SecretStoreKey string
 )
 
+type StatusResponse struct {
+	Status  bool   `json:"status"`
+	Message string `json:"message"`
+}
+
 func InitSessionStore() {
 	if SecretStoreKey == "" {
 		log.Fatal("SecretStoreKey isn't set")

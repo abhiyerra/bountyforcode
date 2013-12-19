@@ -54,13 +54,13 @@ func NewIssue(scalp *scalpy.Scalp) (i *Issue) {
 		Identifier: scalp.IssueId,
 	}
 
-	err := DbMap.SelectOne(&i, "select * from issues where hoster = 'github' AND project = $1 AND repo = $2 AND identifier = $3", i.Project, i.Repo, i.Identifier)
+	err := DbMap.SelectOne(i, "select * from issues where hoster = 'github' AND project = $1 AND repo = $2 AND identifier = $3", i.Project, i.Repo, i.Identifier)
 	if err != nil {
 		log.Printf("NewIssue failed %v\n", err)
-	}
 
-	if err = DbMap.Insert(&i); err != nil {
-		log.Printf("NewIssue failed %v\n", err)
+		if err = DbMap.Insert(i); err != nil {
+			log.Printf("NewIssue failed %v\n", err)
+		}
 	}
 
 	return

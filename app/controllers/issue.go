@@ -32,12 +32,15 @@ func CreateIssueHandler(w http.ResponseWriter, r *http.Request) {
 
 	scalp := scalpy.ScalpUrl(issue_url)
 	if scalp == nil {
-		RenderJson(w, "\"Issue doesn't exist!\"")
+		RenderJson(w, StatusResponse{
+			Status:  false,
+			Message: "Issue doesn't exist!",
+		})
 	} else {
 		issue := NewIssue(scalp)
 		log.Printf("%v\n", issue)
 
-		http.Redirect(w, r, fmt.Sprintf("/issues/%s/contribute", issue.Id), 302)
+		RenderJson(w, issue)
 	}
 }
 
