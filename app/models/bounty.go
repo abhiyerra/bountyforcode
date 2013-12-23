@@ -28,9 +28,9 @@ type Bounty struct {
 	UpdatedAt           time.Time `db:"updated_at" json:"updated_at"`
 }
 
-func NewBounty(issue *Issue, user_id int) (b *Bounty) {
+func NewBounty(issue *Issue, user *User) (b *Bounty) {
 	b = &Bounty{
-		UserId:  user_id,
+		UserId:  user.Id,
 		IssueId: issue.Id,
 		Status:  BountyStateNew,
 	}
@@ -40,7 +40,7 @@ func NewBounty(issue *Issue, user_id int) (b *Bounty) {
 		Type:             "donation",
 		PriceString:      "10.00",
 		PriceCurrencyIso: "USD",
-		Custom:           strconv.Itoa(user_id),
+		Custom:           strconv.Itoa(user.Id),
 		Style:            "donation_large",
 		VariablePrice:    true,
 		ChoosePrice:      true,

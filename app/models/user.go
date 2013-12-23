@@ -1,40 +1,53 @@
 package bountyforcode
 
 import (
-	"database/sql"
-	"fmt"
+	"github.com/octokit/go-octokit/octokit"
 	"log"
+	"time"
 )
 
 type User struct {
-	Id          string `db:"id" json:"id"`
-	AccessToken string `db:"access_token" json:"access_token"`
+	Id                int       `db:"id" json:"id"`
+	GithubUsername    string    `db:"github_username" json:"github_username"`
+	GithubAccessToken string    `db:"github_access_token" json:"access_token"`
+	CreatedAt         time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt         time.Time `db:"updated_at" json:"updated_at"`
+	//	ExpiresAt      string `db:"expires_at" json:"expires_at"`
+
 }
 
-func NewUser(access_token string) (u *User) {
+func GithubUser(access_token string) (user *octokit.User) {
+	client := octokit.NewClient(octokit.TokenAuth{access_token})
+
+	url, _ := octokit.CurrentUserURL.Expand(octokit.M{})
+	user, _ = client.Users(url).One()
+
+	log.Printf("url %s %v", user.Login, user)
+
+	return
+}
+
+func NewUser(github_username, access_token string) (u *User) {
 	if access_token == "" {
 		log.Printf("No access_token to add to db\n")
 		return
 	}
 
 	u = &User{
-		AccessToken: access_token,
+		GithubUsername:    github_username,
+		GithubAccessToken: access_token,
 	}
 
-	err := Db.QueryRow(`SELECT id FROM users WHERE github_access_token = $1`, access_token).Scan(&u.Id)
-	switch {
-	case err == sql.ErrNoRows:
-		err := Db.QueryRow("INSERT INTO users (github_access_token) VALUES ($1) RETURNING id;", u.AccessToken).Scan(&u.Id)
-		if err != nil {
-			log.Printf("Couldn't add access_token %s", u.AccessToken)
-			log.Fatal(err)
+	err := DbMap.SelectOne(u, "SELECT * FROM users WHERE github_username = $1", github_username)
+	if err != nil {
+		if err = DbMap.Insert(u); err != nil {
+			log.Printf("Couldn't add github user %s %v", github_username, err)
 			return nil
 		}
-	case err != nil:
-		log.Fatal(err)
-	default:
-		fmt.Printf("UserId is %s\n", u.Id)
 	}
 
-	return u
+	u.GithubAccessToken = access_token
+	DbMap.Update(u)
+
+	return
 }

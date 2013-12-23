@@ -50,9 +50,11 @@ func RegisterAuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("New Token %v\n", token)
 
+	github_user := GithubUser(token.AccessToken)
+
 	// TODO: Get the user information. Login the user if they already exist in te system.
-	if user := NewUser(token.AccessToken); user != nil {
-		SetSessionUserId(w, r, user.Id)
+	if user := NewUser(github_user.Login, token.AccessToken); user != nil {
+		SetSessionUserId(w, r, user)
 	}
 
 	session, _ := Store.Get(r, "user")
@@ -66,5 +68,7 @@ func RegisterAuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserSessionHandler(w http.ResponseWriter, r *http.Request) {
-	RenderJson(w, GetSessionUserId(r) != "")
+	user := GetSessionUser(r)
+	log.Printf("user %v\n", user)
+	RenderJson(w, *user)
 }

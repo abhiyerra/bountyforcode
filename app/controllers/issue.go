@@ -11,14 +11,11 @@ import (
 )
 
 func IssuesHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	issues := FindAllIssues()
 	RenderJson(w, issues)
 }
 
 func CreateIssueHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
 	decoder := json.NewDecoder(r.Body)
 	var t struct {
 		IssueUrl string `json:"issue_url"`

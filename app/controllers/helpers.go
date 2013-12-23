@@ -1,8 +1,10 @@
 package bountyforcode
 
 import (
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	. "github.com/abhiyerra/bountyforcode/app/models"
 	"github.com/gorilla/sessions"
 	"log"
 	"net/http"
@@ -24,28 +26,35 @@ func InitSessionStore() {
 		log.Fatal("SecretStoreKey isn't set")
 	}
 
+	gob.Register(&User{})
+
 	Store = sessions.NewCookieStore([]byte("something-very-secret"))
 }
 
-func GetSessionUserId(r *http.Request) string {
+func GetSessionUser(r *http.Request) (u *User) {
 	session, _ := Store.Get(r, "user")
-	user_id := session.Values["UserId"]
+	user := session.Values["User"]
 
-	if str, ok := user_id.(string); ok {
-		return str
-	} else {
-		return ""
+	log.Printf("session %v", user)
+
+	u, ok := user.(*User)
+	if !ok {
+		return nil
 	}
+
+	return
 }
 
-func SetSessionUserId(w http.ResponseWriter, r *http.Request, user_id string) {
+func SetSessionUserId(w http.ResponseWriter, r *http.Request, user *User) {
 	session, _ := Store.Get(r, "user")
-	session.Values["UserId"] = user_id
+	session.Values["User"] = user
 	session.Save(r, w)
 }
 
 func RenderJson(w http.ResponseWriter, page interface{}) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	fmt.Printf("%v", page)
 
 	b, err := json.Marshal(page)

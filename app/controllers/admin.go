@@ -6,7 +6,7 @@ import (
 )
 
 func AdminHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "%s", GetSessionUserId(r))
+	fmt.Fprintf(w, "%s", GetSessionUser(r))
 
 	// button := coinbase.GetButton(&coinbase.ButtonRequest{
 	// 	Name: "Abhi Yerra",

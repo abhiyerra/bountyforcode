@@ -49,6 +49,7 @@ func FindProjectIssues(project string) (issues []Issue) {
 
 func NewIssue(scalp *scalpy.Scalp) (i *Issue) {
 	i = &Issue{
+		Hoster:     "github",
 		Project:    scalp.Project,
 		Repo:       scalp.Repo,
 		Identifier: scalp.IssueId,
