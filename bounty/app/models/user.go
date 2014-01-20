@@ -51,3 +51,13 @@ func NewUser(github_username, access_token string) (u *User) {
 
 	return
 }
+
+func FindUser(id string) (u *User) {
+	obj, err := DbMap.Get(User{}, id)
+	if err != nil {
+		log.Println(err)
+	}
+	u = obj.(*User)
+
+	return
+}

@@ -1,0 +1,23 @@
+<div class="row" ng-controller="IssueBountiesCtrl">
+  <div class="col-md-12">
+    <h2>
+      Contributions
+    </h2>
+  </div>
+
+  <div class="col-md-12">
+    <table class="table">
+      <tbody>
+        <tr ng-controller="IssueBountyCtrl" ng-repeat="bounty in bounties">
+          <td>
+            <a ng-href="{{github.html_url}}"><img ng-src="{{github.avatar_url}}" height="24px"></a>
+            {{github.login}}
+          </td>
+          <td>
+            {{bounty.amount}} BTC
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

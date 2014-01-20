@@ -65,11 +65,13 @@ func main() {
 	m.HandleFunc("/v1/register/activate", RegisterAuthorizeHandler).Methods("GET") // TODO Should be authorize
 	m.HandleFunc("/v1/register", RegisterHandler).Methods("GET")
 	m.HandleFunc("/v1/user", UserSessionHandler).Methods("GET")
+	m.HandleFunc("/v1/users/{id}", UserHandler).Methods("GET")
 	m.HandleFunc("/v1/projects/{subdomain:[a-z]+}/issues", ProjectIssuesHandler).Methods("GET")
 	m.HandleFunc("/v1/issues", IssuesHandler).Methods("GET")
 	m.HandleFunc("/v1/issues", CreateIssueHandler).Methods("POST")
 	m.HandleFunc("/v1/issues/{id}", ShowIssueHandler).Methods("GET")
 	m.HandleFunc("/v1/issues/{id}/bounty", NewBountyHandler).Methods("GET")
+	m.HandleFunc("/v1/issues/{id}/bounties", BountiesHandler).Methods("GET")
 	m.HandleFunc(fmt.Sprintf("/v1/coinbase/%s", coinbase.CoinbaseCallbackSecret), CoinbaseCallbackHandler).Methods("POST")
 
 	m.HandleFunc("/admin", AdminHandler).Methods("GET")

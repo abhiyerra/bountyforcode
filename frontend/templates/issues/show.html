@@ -1,0 +1,25 @@
+<div class="row">
+  <div class="col-md-8">
+    <h2>
+      {{issue.project}}/{{issue.repo}} - {{github.title}}
+
+      <span class="badge">{{issue.total_contribution}} BTC</span>
+    </h2>
+  </div>
+
+  <div class="col-md-4">
+    <a ng-href="#/issues/{{issue.id}}/contribute" class="btn btn-lg btn-success">Contribute</a>
+    <a ng-href="#/issues/{{issue.id}}/claim" class="btn btn-lg btn-info">Claim</a>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12 issue-description" ng-bind-html="desc">
+  </div>
+
+  <div class="col-md-12 form-group">
+    <input type="text" class="form-control" value="{{github.html_url}}">
+  </div>
+</div>
+
+<div ng-include src="'templates/bounties/contributions.html'"></div>

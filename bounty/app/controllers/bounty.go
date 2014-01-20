@@ -45,3 +45,14 @@ func NewBountyHandler(w http.ResponseWriter, r *http.Request) {
 
 	RenderJson(w, bounty)
 }
+
+func BountiesHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	log.Println(vars)
+	issue_id := vars["id"]
+
+	log.Println(issue_id)
+	bounties := FindBounties(issue_id)
+
+	RenderJson(w, bounties)
+}

@@ -1,0 +1,43 @@
+<div class="jumbotron">
+  <p>
+    Easiest way to get contributions to be written for open source
+    projects. Enter a github issue to get started.
+  </p>
+
+  <div ng-controller="NewBountyCtrl" ng-submit="create()">
+    <form class="form-inline" novalidate>
+      <div class="form-group">
+        <input type="text" class="form-control input-lg col-lg-8" placeholder="http://github.com/abhiyerra/bountyforcode/issues/1" name="issueUrl" ng-model="issueUrl" ng-change="getIssue()">
+      </div>
+
+      <div class="form-group">
+        <button type="submit" class="btn pull-right btn-success btn-lg">
+          Create Bounty
+        </button>
+
+{{data}} {{status}} {{message}}
+      </div>
+    </form>
+
+    <div ng-show="issueUrl">
+      <p>
+        <b>{{issue.title}}</b>
+      </p>
+
+      <p ng-bind-html="desc">
+      </p>
+
+      <p>
+        {{issue.total_contribution}}
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="page-header" ng-controller="DiscoverBountyCtrl">
+  <h3>
+    Discover
+  </h3>
+
+  <div ng-include src="'templates/issues/discover.html'"></div>
+</div>

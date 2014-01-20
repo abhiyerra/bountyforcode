@@ -68,6 +68,17 @@ func FindBountyByCoinbaseButtonCode(coinbase_code string) (b *Bounty) {
 	return
 }
 
+func FindBounties(issue_id string) (b []Bounty) {
+	_, err := DbMap.Select(&b, "SELECT * FROM bounties WHERE issue_id = $1", issue_id)
+
+	if err != nil {
+		log.Printf("FindBounties failed %v\n", err)
+		return nil
+	}
+
+	return
+}
+
 func (b *Bounty) UpdateCoinbaseInfo(order coinbase.Order) {
 	b.CoinbaseOrderId = order.Id
 	b.CoinbaseTotalBtc = order.TotalBtc.Cents

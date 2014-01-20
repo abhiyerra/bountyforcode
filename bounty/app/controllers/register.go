@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/goauth2/oauth"
 	"fmt"
 	. "github.com/abhiyerra/bountyforcode/app/models"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 )
@@ -71,4 +72,20 @@ func UserSessionHandler(w http.ResponseWriter, r *http.Request) {
 	user := GetSessionUser(r)
 	log.Printf("user %v\n", user)
 	RenderJson(w, *user)
+}
+
+type UserSmall struct {
+	Id             int    `json:"id"`
+	GitHubUsername string `json:"github_username"`
+}
+
+func UserHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	user_id := vars["id"]
+
+	user := FindUser(user_id)
+
+	u := UserSmall{user.Id, user.GithubUsername}
+
+	RenderJson(w, u)
 }

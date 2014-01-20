@@ -1,0 +1,19 @@
+<div ng-controller="DiscoverBountyCtrl">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Repo</th>
+        <th>Issue</th>
+        <th>Bounty</th>
+        <th>Contribute</th>
+      </tr>
+
+      <tr ng-controller="DiscoverIssueCtrl" ng-repeat="issue in issues">
+        <td><a ng-href="http://github.com/{{issue.project}}/{{issue.repo}}">{{issue.project}}/{{issue.repo}}</a></td>
+        <td><a ng-href="/#/issues/{{issue.id}}">{{github.title}}</a></td>
+        <td>{{issue.total}} BTC</td>
+        <td><a ng-href="#/issues/{{issue.id}}/contribute">Contribute</a></td>
+      </tr>
+    </thead>
+  </table>
+</div>
