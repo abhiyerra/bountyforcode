@@ -3,7 +3,7 @@ package bountyforcode
 import (
 	"code.google.com/p/goauth2/oauth"
 	"fmt"
-	. "github.com/abhiyerra/bountyforcode/app/models"
+	. "github.com/abhiyerra/bountyforcode/bounty/app/models"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"

@@ -3,7 +3,7 @@ package bountyforcode
 import (
 	"encoding/json"
 	"fmt"
-	. "github.com/abhiyerra/bountyforcode/app/models"
+	. "github.com/abhiyerra/bountyforcode/bounty/app/models"
 	"github.com/abhiyerra/scalpy"
 	"github.com/gorilla/mux"
 	"log"

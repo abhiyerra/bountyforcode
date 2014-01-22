@@ -2,7 +2,7 @@ package bountyforcode
 
 import (
 	"fmt"
-	. "github.com/abhiyerra/bountyforcode/app/models"
+	. "github.com/abhiyerra/bountyforcode/bounty/app/models"
 	"github.com/abhiyerra/coinbase"
 	"io/ioutil"
 	"log"

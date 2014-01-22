@@ -20,8 +20,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	. "github.com/abhiyerra/bountyforcode/app/controllers"
-	. "github.com/abhiyerra/bountyforcode/app/models"
+	. "github.com/abhiyerra/bountyforcode/bounty/app/controllers"
+	. "github.com/abhiyerra/bountyforcode/bounty/app/models"
 	"github.com/abhiyerra/coinbase"
 	"github.com/gorilla/mux"
 	"log"

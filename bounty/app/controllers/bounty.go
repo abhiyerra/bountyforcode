@@ -1,7 +1,7 @@
 package bountyforcode
 
 import (
-	. "github.com/abhiyerra/bountyforcode/app/models"
+	. "github.com/abhiyerra/bountyforcode/bounty/app/models"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"

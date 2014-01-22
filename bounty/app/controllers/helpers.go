@@ -4,7 +4,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	. "github.com/abhiyerra/bountyforcode/app/models"
+	. "github.com/abhiyerra/bountyforcode/bounty/app/models"
 	"github.com/gorilla/sessions"
 	"log"
 	"net/http"
