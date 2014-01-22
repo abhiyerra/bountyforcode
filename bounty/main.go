@@ -32,7 +32,7 @@ var (
 	domain string
 )
 
-func InitConfig() {
+func init() {
 	flag.StringVar(&PostgresHost, "pghost", "", "the host for postgres")
 	flag.StringVar(&PostgresDb, "dbname", "", "the db for postgres")
 	flag.StringVar(&GithubClientId, "github_client_id", "", "github client id")
@@ -52,7 +52,6 @@ func InitConfig() {
 }
 
 func main() {
-	InitConfig()
 	InitDb()
 	InitSessionStore()
 	InitGithub()
